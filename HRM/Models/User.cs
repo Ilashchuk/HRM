@@ -11,10 +11,10 @@ namespace HRM.Models
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime StartDate { get; set; }
-        public int UserStatusId { get; set; }
-        public int UserLevelId { get; set; }
-        public int TeamId { get; set; }
-        public int RoleTypeId { get; set; }
+        public int? UserStatusId { get; set; }
+        public int? UserLevelId { get; set; }
+        public int? TeamId { get; set; }
+        public int? RoleTypeId { get; set; }
         public int CompanyId { get; set; }
 
         public ICollection<UserDocument> UserDocuments { get; set; } = new List<UserDocument>();

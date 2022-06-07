@@ -215,7 +215,7 @@ namespace HRM.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleTypeId")
+                    b.Property<int?>("RoleTypeId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
@@ -224,13 +224,13 @@ namespace HRM.Migrations
                     b.Property<int?>("StatusId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserLevelId")
+                    b.Property<int?>("UserLevelId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserStatusId")
+                    b.Property<int?>("UserStatusId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -333,9 +333,7 @@ namespace HRM.Migrations
 
                     b.HasOne("HRM.Models.RoleType", "RoleType")
                         .WithMany("Users")
-                        .HasForeignKey("RoleTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RoleTypeId");
 
                     b.HasOne("HRM.Models.Status", "Status")
                         .WithMany("Users")
@@ -343,15 +341,11 @@ namespace HRM.Migrations
 
                     b.HasOne("HRM.Models.Team", "Team")
                         .WithMany("Users")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TeamId");
 
                     b.HasOne("HRM.Models.UserLevel", "UserLevel")
                         .WithMany("Users")
-                        .HasForeignKey("UserLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserLevelId");
 
                     b.Navigation("Company");
 

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace HRM.Migrations
 {
-    public partial class HRM_Migration : Migration
+    public partial class HRMMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -145,10 +145,10 @@ namespace HRM.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserStatusId = table.Column<int>(type: "int", nullable: false),
-                    UserLevelId = table.Column<int>(type: "int", nullable: false),
-                    TeamId = table.Column<int>(type: "int", nullable: false),
-                    RoleTypeId = table.Column<int>(type: "int", nullable: false),
+                    UserStatusId = table.Column<int>(type: "int", nullable: true),
+                    UserLevelId = table.Column<int>(type: "int", nullable: true),
+                    TeamId = table.Column<int>(type: "int", nullable: true),
+                    RoleTypeId = table.Column<int>(type: "int", nullable: true),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     StatusId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -165,8 +165,7 @@ namespace HRM.Migrations
                         name: "FK_Users_RoleTypes_RoleTypeId",
                         column: x => x.RoleTypeId,
                         principalTable: "RoleTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Users_Statuses_StatusId",
                         column: x => x.StatusId,
@@ -176,14 +175,12 @@ namespace HRM.Migrations
                         name: "FK_Users_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Users_UserLevels_UserLevelId",
                         column: x => x.UserLevelId,
                         principalTable: "UserLevels",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
