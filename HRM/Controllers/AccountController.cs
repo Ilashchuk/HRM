@@ -1,5 +1,6 @@
 ﻿using HRM.Data;
 using HRM.Models;
+using HRM.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -47,19 +48,34 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-                if (user == null)
+                Company? company = await db.Companies.FirstOrDefaultAsync(c => c.Name == model.Company);
+                if (company == null)
                 {
-                    //adding user(role: HR) to db
-                    db.Users.Add(new User { });
+                    db.Companies.Add(new Company { Name = model.Company });
                     await db.SaveChangesAsync();
 
-                    await Authenticate(model.Email);
+                    User? user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+                    if (user == null)
+                    {
+                        //adding user(role: HR) to db
+                        db.Users.Add(new User { FullName = model.FullName, 
+                            Email = model.Email, 
+                            Password = model.Password,
+                            StartDate = DateTime.Now, 
+                            CompanyId = db.Companies.First(c => c.Name == model.Company).Id, 
+                            RoleTypeId = db.RoleTypes.First(r => r.Name == "HR").Id
+                        });
+                        await db.SaveChangesAsync();
 
-                    return RedirectToAction("Index", "Home");
+                        await Authenticate(model.Email);
+
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                        ModelState.AddModelError("", "Incorrect login and(or) password");
                 }
                 else
-                    ModelState.AddModelError("", "Incorrect login and(or) password");
+                    ModelState.AddModelError("", "Company is olready registered");
             }
             return View(model);
         }

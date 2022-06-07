@@ -2,7 +2,7 @@
 
 namespace HRM.ViewModels
 {
-    public class LoginModel
+    public class LoginViewModel
     {
         public string? Email { get; set; }
         [DataType(DataType.Password)]

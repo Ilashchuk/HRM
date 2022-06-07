@@ -2,7 +2,7 @@
 
 namespace HRM.ViewModels
 {
-    public class RegisterModel
+    public class RegisterViewModel
     {
         public string? Company { get; set; }
         public string? FullName { get; set; }

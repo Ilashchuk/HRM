@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HRM.Controllers
 {
@@ -20,6 +21,7 @@ namespace HRM.Controllers
         }
 
         // GET: Users
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var hRMContext = _context.Users.Include(u => u.Company).Include(u => u.RoleType).Include(u => u.Team).Include(u => u.UserLevel);
