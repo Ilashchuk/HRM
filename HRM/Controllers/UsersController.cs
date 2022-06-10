@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace HRM.Controllers
 {
+    [Authorize]
     public class UsersController : Controller
     {
         private readonly HRMContext _context;
@@ -21,7 +22,6 @@ namespace HRM.Controllers
         }
 
         // GET: Users
-        [Authorize]
         public async Task<IActionResult> Index()
         {
             var hRMContext = _context.Users.Include(u => u.Company).Include(u => u.RoleType).Include(u => u.Team).Include(u => u.UserLevel);
@@ -51,6 +51,7 @@ namespace HRM.Controllers
         }
 
         // GET: Users/Create
+        [Authorize(Roles = "HR")]
         public IActionResult Create()
         {
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Id");
@@ -65,6 +66,7 @@ namespace HRM.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "HR")]
         public async Task<IActionResult> Create([Bind("Id,FullName,Password,Email,StartDate,UserStatusId,UserLevelId,TeamId,RoleTypeId,CompanyId")] User user)
         {
             if (ModelState.IsValid)
@@ -140,6 +142,7 @@ namespace HRM.Controllers
         }
 
         // GET: Users/Delete/5
+        [Authorize(Roles = "HR")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Users == null)
@@ -164,6 +167,7 @@ namespace HRM.Controllers
         // POST: Users/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "HR")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_context.Users == null)

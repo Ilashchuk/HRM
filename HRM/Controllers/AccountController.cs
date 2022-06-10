@@ -30,7 +30,7 @@ namespace HRM.Controllers
                 User user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
-                    await Authenticate(model.Email);
+                    await Authenticate(user);
                     return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError("", "Incorrect login and(or) password");
@@ -62,12 +62,14 @@ namespace HRM.Controllers
                             Email = model.Email, 
                             Password = model.Password,
                             StartDate = DateTime.Now, 
-                            CompanyId = db.Companies.First(c => c.Name == model.Company).Id, 
-                            RoleTypeId = db.RoleTypes.First(r => r.Name == "HR").Id
+                            CompanyId = db.Companies.First(c => c.Name == model.Company).Id
                         });
+                        RoleType role = await db.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
+                        if (role == null)
+                            user.RoleType = role;
                         await db.SaveChangesAsync();
 
-                        await Authenticate(model.Email);
+                        await Authenticate(user);
 
                         return RedirectToAction("Index", "Home");
                     }
@@ -80,12 +82,15 @@ namespace HRM.Controllers
             return View(model);
         }
 
-        private async Task Authenticate(string userName)
+        private async Task Authenticate(User user)
         {
-            var claims = new List<Claim>()
-            {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
-            };
+            var claims = new List<Claim>();
+
+            //{
+            claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email));
+            claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, db.RoleTypes.First(r => r.Id == user.RoleTypeId).Name));
+
+            //};
 
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
