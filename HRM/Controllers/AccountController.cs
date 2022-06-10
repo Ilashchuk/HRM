@@ -58,15 +58,20 @@ namespace HRM.Controllers
                     if (user == null)
                     {
                         //adding user(role: HR) to db
-                        db.Users.Add(new User { FullName = model.FullName, 
+                        user = new User { FullName = model.FullName, 
                             Email = model.Email, 
                             Password = model.Password,
                             StartDate = DateTime.Now, 
-                            CompanyId = db.Companies.First(c => c.Name == model.Company).Id
-                        });
-                        RoleType role = await db.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
+                            CompanyId = db.Companies.First(c => c.Name == model.Company).Id,
+                            RoleTypeId = db.RoleTypes.First(r => r.Name == "HR").Id
+                        };
+                        RoleType role = await db.RoleTypes.FirstOrDefaultAsync(r => r.Id == user.RoleTypeId);
                         if (role == null)
+                        {
                             user.RoleType = role;
+                        }
+                            
+                        db.Add(user);
                         await db.SaveChangesAsync();
 
                         await Authenticate(user);
@@ -84,14 +89,13 @@ namespace HRM.Controllers
 
         private async Task Authenticate(User user)
         {
-            var claims = new List<Claim>();
-
-            //{
-            claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email));
-            claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, db.RoleTypes.First(r => r.Id == user.RoleTypeId).Name));
-
-            //};
-
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, db.RoleTypes.First(r => r.Id == user.RoleTypeId).Name)
+            };
+            //claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email));
+            //claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, db.RoleTypes.First(r => r.Id == user.RoleTypeId).Name));
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
 
