@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace HRM.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "HR, TeamLead")]
     public class UsersController : Controller
     {
         private readonly HRMContext _context;
@@ -24,7 +24,18 @@ namespace HRM.Controllers
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            var hRMContext = _context.Users.Include(u => u.Company).Include(u => u.RoleType).Include(u => u.Team).Include(u => u.UserLevel);
+            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == HttpContext.User.Identity.Name);
+            RoleType HR = await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
+
+            var hRMContext = _context.Users.Include(u => u.Company)
+                    .Include(u => u.RoleType).Include(u => u.Team).Include(u => u.UserLevel)
+                    .Where(u => u.Id != user.Id && u.RoleTypeId != HR.Id);
+
+            ViewBag.userName = HttpContext.User.Identity.Name;
+
+            if (HttpContext.User.IsInRole("TeamLead"))
+                return View(await hRMContext.Where(u => u.TeamId == user.TeamId).ToListAsync());
+            
             return View(await hRMContext.ToListAsync());
         }
 
