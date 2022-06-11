@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
 using Microsoft.AspNetCore.Authorization;
+using HRM.Services;
 
 namespace HRM.Controllers
 {
@@ -15,17 +16,21 @@ namespace HRM.Controllers
     public class UsersController : Controller
     {
         private readonly HRMContext _context;
+        private UsersControlService _usersControleService;
 
         public UsersController(HRMContext context)
         {
+            _usersControleService = new UsersControlService(context);
             _context = context;
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == HttpContext.User.Identity.Name);
-            RoleType HR = await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
+            User user = _usersControleService.GetUser(HttpContext.User.Identity.Name);
+            //await _context.Users.FirstOrDefaultAsync(u => u.Email == HttpContext.User.Identity.Name);
+            RoleType HR = _usersControleService.GetRole("HR");
+                          //await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
 
             var hRMContext = _context.Users.Include(u => u.Company)
                     .Include(u => u.RoleType).Include(u => u.Team).Include(u => u.UserLevel)
