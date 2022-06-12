@@ -55,6 +55,7 @@ namespace HRM.Controllers
                 .Include(u => u.RoleType)
                 .Include(u => u.Team)
                 .Include(u => u.UserLevel)
+                .Include(u => u.Status)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {
@@ -120,6 +121,7 @@ namespace HRM.Controllers
             }
             StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
 
+
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
@@ -164,7 +166,7 @@ namespace HRM.Controllers
                 return RedirectToAction(nameof(Index));
             }
             StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
-            //ViewData["Status"] = new SelectList(_context.Statuses, "Id", "Name");
+
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
@@ -186,6 +188,7 @@ namespace HRM.Controllers
                 .Include(u => u.RoleType)
                 .Include(u => u.Team)
                 .Include(u => u.UserLevel)
+                .Include(u => u.Status)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {

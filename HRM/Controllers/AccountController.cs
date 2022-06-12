@@ -27,7 +27,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
+                User? user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
                     await Authenticate(user);
@@ -63,9 +63,13 @@ namespace HRM.Controllers
                             Password = model.Password,
                             StartDate = DateTime.Now, 
                             CompanyId = db.Companies.First(c => c.Name == model.Company).Id,
-                            RoleTypeId = db.RoleTypes.First(r => r.Name == "HR").Id
+                            RoleTypeId = db.RoleTypes.First(r => r.Name == "HR").Id,
+                            UserStatusId = db.Statuses.First(s => s.Name == "Working").Id
                         };
-                        RoleType role = await db.RoleTypes.FirstOrDefaultAsync(r => r.Id == user.RoleTypeId);
+                        user.Company = db.Companies.First(c => c.Id == user.CompanyId);
+                        user.Status = db.Statuses.First(s => s.Id == user.UserStatusId);
+
+                        RoleType? role = await db.RoleTypes.FirstOrDefaultAsync(r => r.Id == user.RoleTypeId);
                         if (role == null)
                         {
                             user.RoleType = role;
