@@ -48,7 +48,7 @@ namespace HRM.Controllers
         // GET: Status/Create
         public IActionResult Create()
         {
-            ViewData["StatusTypeId"] = new SelectList(_context.StatusTypes, "Id", "Id");
+            ViewData["StatusType"] = new SelectList(_context.StatusTypes, "Id", "Name");
             return View();
         }
 
@@ -65,7 +65,7 @@ namespace HRM.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["StatusTypeId"] = new SelectList(_context.StatusTypes, "Id", "Id", status.StatusTypeId);
+            ViewData["StatusType"] = new SelectList(_context.StatusTypes, "Id", "Name");
             return View(status);
         }
 
@@ -82,7 +82,7 @@ namespace HRM.Controllers
             {
                 return NotFound();
             }
-            ViewData["StatusTypeId"] = new SelectList(_context.StatusTypes, "Id", "Id", status.StatusTypeId);
+            ViewData["StatusType"] = new SelectList(_context.StatusTypes, "Id", "Name");
             return View(status);
         }
 
@@ -118,7 +118,7 @@ namespace HRM.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["StatusTypeId"] = new SelectList(_context.StatusTypes, "Id", "Id", status.StatusTypeId);
+            ViewData["StatusTypeId"] = new SelectList(_context.StatusTypes, "Id", "Name");
             return View(status);
         }
 

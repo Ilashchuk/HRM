@@ -69,12 +69,11 @@ namespace HRM.Controllers
         [Authorize(Roles = "HR")]
         public IActionResult Create()
         {
-            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
 
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
             return View();
         }
 
@@ -96,12 +95,11 @@ namespace HRM.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
 
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
             return View(user);
         }
 
@@ -119,13 +117,11 @@ namespace HRM.Controllers
             {
                 return NotFound();
             }
-            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
-
 
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
             return View(user);
         }
 
@@ -165,12 +161,11 @@ namespace HRM.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
 
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
             return View(user);
         }
 

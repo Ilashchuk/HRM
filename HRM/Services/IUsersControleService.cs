@@ -6,6 +6,7 @@ namespace HRM.Services
     {
         public User GetUser(string name);
         public RoleType GetRole(string name);
+        public int GetUserStatusId();
         //public List<User> GetUsersList(User currentUser);
     }
 }

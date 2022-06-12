@@ -19,13 +19,16 @@ namespace HRM.Models
         public int? UserLevelId { get; set; }
         [Display(Name = "Team")]
         public int? TeamId { get; set; }
+        [Display(Name = "Role")]
         public int? RoleTypeId { get; set; }
         public int CompanyId { get; set; }
 
         public ICollection<UserDocument> UserDocuments { get; set; } = new List<UserDocument>();
         public ICollection<Request> Requests { get; set; } = new List<Request>();
         public Status? Status { get; set; }
+        [Display(Name = "Role")]
         public RoleType? RoleType { get; set; }
+        [Display(Name = "Level")]
         public UserLevel? UserLevel { get; set; }
         public Team? Team { get; set; }
         public Company? Company { get; set; }

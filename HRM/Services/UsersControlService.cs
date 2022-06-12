@@ -12,6 +12,10 @@ namespace HRM.Services
 
         public User GetUser(string name) => _context.Users.FirstOrDefault(u => u.Email == name);
         public RoleType GetRole(string name) => _context.RoleTypes.FirstOrDefault(r => r.Name == name);
+        public int GetUserStatusId()
+        {
+            return _context.StatusTypes.First(st => st.Name == "User status").Id;
+        }
 
         //public List<User> GetUsersList(User currentUser)
         //{
