@@ -1,23 +1,24 @@
 ﻿@model IEnumerable<HRM.Models.User>
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 
 @{
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
-<h2>@ViewBag.userName</h2>
+<h1>Users</h1>
+@if (User.IsInRole("HR"))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+}
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Password)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Email)
@@ -26,7 +27,7 @@
                 @Html.DisplayNameFor(model => model.StartDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UserStatusId)
+                @Html.DisplayNameFor(model => model.Status)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.RoleType)
@@ -36,9 +37,6 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Team)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Company)
             </th>
             <th></th>
         </tr>
@@ -50,34 +48,31 @@
                 @Html.DisplayFor(modelItem => item.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Password)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.StartDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.UserStatusId)
+                @Html.DisplayFor(modelItem => item.Status.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.RoleType.Id)
+                @Html.DisplayFor(modelItem => item.RoleType.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.UserLevel.Id)
+                @Html.DisplayFor(modelItem => item.UserLevel.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Team.Id)
+                @Html.DisplayFor(modelItem => item.Team.Name)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Company.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
+            @if (User.IsInRole("HR"))
+            {
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            }
         </tr>
 }
     </tbody>

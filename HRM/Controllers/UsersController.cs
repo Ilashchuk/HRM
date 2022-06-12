@@ -32,11 +32,9 @@ namespace HRM.Controllers
             RoleType HR = _usersControleService.GetRole("HR");
                           //await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
 
-            var hRMContext = _context.Users.Include(u => u.Company)
-                    .Include(u => u.RoleType).Include(u => u.Team).Include(u => u.UserLevel)
+            var hRMContext = _context.Users.Include(u => u.Company).Include(u => u.RoleType)
+                    .Include(u => u.Team).Include(u => u.UserLevel).Include(u => u.Status)
                     .Where(u => u.Id != user.Id && u.RoleTypeId != HR.Id);
-
-            ViewBag.userName = HttpContext.User.Identity.Name;
 
             if (HttpContext.User.IsInRole("TeamLead"))
                 return View(await hRMContext.Where(u => u.TeamId == user.TeamId).ToListAsync());
@@ -70,10 +68,12 @@ namespace HRM.Controllers
         [Authorize(Roles = "HR")]
         public IActionResult Create()
         {
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Id");
-            ViewData["RoleTypeId"] = new SelectList(_context.RoleTypes, "Id", "Id");
-            ViewData["TeamId"] = new SelectList(_context.Teams, "Id", "Id");
-            ViewData["UserLevelId"] = new SelectList(_context.UserLevels, "Id", "Id");
+            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
+
+            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+            ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
+            ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
             return View();
         }
 
@@ -87,18 +87,25 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
+                User currentUser = _usersControleService.GetUser(HttpContext.User.Identity.Name);
+                user.CompanyId = currentUser.CompanyId;
+                user.StartDate = DateTime.Now;
+                user.Status = _context.Statuses.First(st => st.Id == user.UserStatusId);
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Id", user.CompanyId);
-            ViewData["RoleTypeId"] = new SelectList(_context.RoleTypes, "Id", "Id", user.RoleTypeId);
-            ViewData["TeamId"] = new SelectList(_context.Teams, "Id", "Id", user.TeamId);
-            ViewData["UserLevelId"] = new SelectList(_context.UserLevels, "Id", "Id", user.UserLevelId);
+            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
+
+            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+            ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
+            ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
             return View(user);
         }
 
         // GET: Users/Edit/5
+        [Authorize(Roles = "HR")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Users == null)
@@ -111,10 +118,12 @@ namespace HRM.Controllers
             {
                 return NotFound();
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Id", user.CompanyId);
-            ViewData["RoleTypeId"] = new SelectList(_context.RoleTypes, "Id", "Id", user.RoleTypeId);
-            ViewData["TeamId"] = new SelectList(_context.Teams, "Id", "Id", user.TeamId);
-            ViewData["UserLevelId"] = new SelectList(_context.UserLevels, "Id", "Id", user.UserLevelId);
+            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
+
+            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+            ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
+            ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
             return View(user);
         }
 
@@ -123,8 +132,12 @@ namespace HRM.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Password,Email,StartDate,UserStatusId,UserLevelId,TeamId,RoleTypeId,CompanyId")] User user)
+        [Authorize(Roles = "HR")]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Email,StartDate,UserStatusId,UserLevelId,TeamId,RoleTypeId,CompanyId")] User user)
         {
+            User currentUser = _usersControleService.GetUser(HttpContext.User.Identity.Name);
+            user.CompanyId = currentUser.CompanyId;
+            user.Status = _context.Statuses.First(st => st.Id == user.UserStatusId);
             if (id != user.Id)
             {
                 return NotFound();
@@ -150,10 +163,12 @@ namespace HRM.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Id", user.CompanyId);
-            ViewData["RoleTypeId"] = new SelectList(_context.RoleTypes, "Id", "Id", user.RoleTypeId);
-            ViewData["TeamId"] = new SelectList(_context.Teams, "Id", "Id", user.TeamId);
-            ViewData["UserLevelId"] = new SelectList(_context.UserLevels, "Id", "Id", user.UserLevelId);
+            StatusType userStatus = _context.StatusTypes.First(st => st.Name == "User status");
+            //ViewData["Status"] = new SelectList(_context.Statuses, "Id", "Name");
+            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+            ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
+            ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
+            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == userStatus.Id), "Id", "Name");
             return View(user);
         }
 
