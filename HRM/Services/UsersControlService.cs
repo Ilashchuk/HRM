@@ -10,11 +10,24 @@ namespace HRM.Services
 
         public UsersControlService(HRMContext context) => _context = context;
 
-        public User GetUser(string name) => _context.Users.FirstOrDefault(u => u.Email == name);
-        public RoleType GetRole(string name) => _context.RoleTypes.FirstOrDefault(r => r.Name == name);
-        public int GetUserStatusId()
+        public User GetUser(string name) => _context.Users.FirstOrDefault(u => u.Email == name)!;
+        public User GetUserById(int id) => _context.Users.Include(u => u.Company)
+                                                         .Include(u => u.RoleType)
+                                                         .Include(u => u.Team)
+                                                         .Include(u => u.UserLevel)
+                                                         .Include(u => u.Status).FirstOrDefault(u => u.Id == id)!;
+        public RoleType GetRole(string name) => _context.RoleTypes.FirstOrDefault(r => r.Name == name)!;
+        public int GetUserStatusId() => _context.StatusTypes.First(st => st.Name == "User status").Id;
+
+        public List<User> GetUsersListForCurrentUser(User currentUser)
         {
-            return _context.StatusTypes.First(st => st.Name == "User status").Id;
+            RoleType HR = GetRole("HR");
+            var  users = _context.Users.Include(u => u.Company).Include(u => u.RoleType)
+                    .Include(u => u.Team).Include(u => u.UserLevel).Include(u => u.Status)
+                    .Where(u => u.Id != currentUser.Id && u.RoleTypeId != HR.Id);
+            if (currentUser.RoleType == HR)
+                return users.ToList();
+            return users.Where(u => u.TeamId == currentUser.TeamId).ToList();
         }
 
         //public List<User> GetUsersList(User currentUser)

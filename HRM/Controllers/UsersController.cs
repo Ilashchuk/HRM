@@ -16,47 +16,27 @@ namespace HRM.Controllers
     public class UsersController : Controller
     {
         private readonly HRMContext _context;
-        private UsersControlService _usersControleService;
+        IUsersControleService _usersControleService;
 
-        public UsersController(HRMContext context)
+        public UsersController(IUsersControleService usersControleService)
         {
-            _usersControleService = new UsersControlService(context);
-            _context = context;
+            _usersControleService = usersControleService;
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
             User user = _usersControleService.GetUser(HttpContext.User.Identity.Name);
-            //await _context.Users.FirstOrDefaultAsync(u => u.Email == HttpContext.User.Identity.Name);
-            RoleType HR = _usersControleService.GetRole("HR");
-                          //await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
 
-            var hRMContext = _context.Users.Include(u => u.Company).Include(u => u.RoleType)
-                    .Include(u => u.Team).Include(u => u.UserLevel).Include(u => u.Status)
-                    .Where(u => u.Id != user.Id && u.RoleTypeId != HR.Id);
+            return View(_usersControleService.GetUsersListForCurrentUser(user));
 
-            if (HttpContext.User.IsInRole("TeamLead"))
-                return View(await hRMContext.Where(u => u.TeamId == user.TeamId).ToListAsync());
-            
-            return View(await hRMContext.ToListAsync());
         }
 
         // GET: Users/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int id)
         {
-            if (id == null || _context.Users == null)
-            {
-                return NotFound();
-            }
+            var user = _usersControleService.GetUserById(id);
 
-            var user = await _context.Users
-                .Include(u => u.Company)
-                .Include(u => u.RoleType)
-                .Include(u => u.Team)
-                .Include(u => u.UserLevel)
-                .Include(u => u.Status)
-                .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {
                 return NotFound();

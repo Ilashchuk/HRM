@@ -1,5 +1,6 @@
 using HRM;
 using HRM.Data;
+using HRM.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = new PathString("/Account/Login");
     });
+
+//builder.Services.AddScoped<IMyDependency, MyDependency>();
+
+builder.Services.AddScoped<IUsersControleService, UsersControlService>();
 
 var app = builder.Build();
 
