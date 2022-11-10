@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Services.UsersServices
 {
-    public class UsersControlService : IUsersControleService
+    public class UsersControlService : IUsersControlService
     {
         private readonly HRMContext _context;
 
@@ -17,12 +17,12 @@ namespace HRM.Services.UsersServices
                                                          .Include(u => u.Team)
                                                          .Include(u => u.UserLevel)
                                                          .Include(u => u.Status).FirstOrDefaultAsync(u => u.Id == id);
-        public async Task<RoleType?> GetRoleByNameAsync(string name) => await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == name)!;
-        public int GetUserStatusId() => _context.StatusTypes.First(st => st.Name == "User status").Id;
+        //public async Task<RoleType?> GetRoleByNameAsync(string name) => await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == name)!;
+        //public int GetUserStatusId() => _context.StatusTypes.First(st => st.Name == "User status").Id;
 
         public async Task<List<User>> GetUsersListForCurrentUserAsync(User currentUser)
         {
-            var HR = await GetRoleByNameAsync("HR");
+            var HR = await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
             if (HR != null)
             {
                 var users = _context.Users.Include(u => u.Company).Include(u => u.RoleType)
@@ -61,19 +61,5 @@ namespace HRM.Services.UsersServices
             return (_context.Users?.Any()).GetValueOrDefault();
         }
 
-        //public List<User> GetUsersList(User currentUser)
-        //{
-        //    List<User> users = new List<User>();
-
-        //    users = (List<User>)_context.Users.Include(u => u.Company)
-        //        .Include(u => u.RoleType).Include(u => u.Team).Include(u => u.UserLevel)
-        //        .Where(u => u.Id != currentUser.Id && u.RoleTypeId != GetRole("HR").Id && u.CompanyId == currentUser.CompanyId);
-
-        //    if (currentUser.RoleTypeId == GetRole("TeamLead").Id)
-        //    {
-        //        users = users.Where(u => u.TeamId == currentUser.TeamId).ToList();
-        //    }
-        //    return users;
-        //}
     }
 }

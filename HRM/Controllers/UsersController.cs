@@ -16,9 +16,9 @@ namespace HRM.Controllers
     public class UsersController : Controller
     {
         //private readonly HRMContext _context;
-        private readonly IUsersControleService _usersControleService;
+        private readonly IUsersControlService _usersControleService;
 
-        public UsersController(IUsersControleService usersControleService, HRMContext context)
+        public UsersController(IUsersControlService usersControleService, HRMContext context)
         {
             _usersControleService = usersControleService;
             //_context = context;

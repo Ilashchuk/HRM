@@ -20,7 +20,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 //builder.Services.AddScoped<IMyDependency, MyDependency>();
 
-builder.Services.AddScoped<IUsersControleService, UsersControlService>();
+builder.Services.AddScoped<IUsersControlService, UsersControlService>();
 
 var app = builder.Build();
 
