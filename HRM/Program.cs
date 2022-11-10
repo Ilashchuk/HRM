@@ -1,5 +1,6 @@
 using HRM;
 using HRM.Data;
+using HRM.Services.StatusesServices;
 using HRM.Services.UsersServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +20,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 //builder.Services.AddScoped<IMyDependency, MyDependency>();
-
 builder.Services.AddScoped<IUsersControlService, UsersControlService>();
+builder.Services.AddScoped<IStatusesControlService, StatusesControlService>();
 
 var app = builder.Build();
 
