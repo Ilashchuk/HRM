@@ -1,6 +1,6 @@
 using HRM;
 using HRM.Data;
-using HRM.Services;
+using HRM.Services.UsersServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 

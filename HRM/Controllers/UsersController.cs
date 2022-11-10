@@ -8,34 +8,35 @@ using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
 using Microsoft.AspNetCore.Authorization;
-using HRM.Services;
+using HRM.Services.UsersServices;
 
 namespace HRM.Controllers
 {
     [Authorize(Roles = "HR, TeamLead")]
     public class UsersController : Controller
     {
-        private readonly HRMContext _context;
-        IUsersControleService _usersControleService;
+        //private readonly HRMContext _context;
+        private readonly IUsersControleService _usersControleService;
 
-        public UsersController(IUsersControleService usersControleService)
+        public UsersController(IUsersControleService usersControleService, HRMContext context)
         {
             _usersControleService = usersControleService;
+            //_context = context;
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            User user = _usersControleService.GetUser(HttpContext.User.Identity.Name);
 
-            return View(_usersControleService.GetUsersListForCurrentUser(user));
+            return View(await _usersControleService.GetUsersListForCurrentUserAsync(
+                await _usersControleService.GetUserByEmailAsync(HttpContext.User.Identity.Name)));
 
         }
 
         // GET: Users/Details/5
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var user = _usersControleService.GetUserById(id);
+            var user = await _usersControleService.GetUserByIdAsync(id);
 
             if (user == null)
             {
@@ -67,12 +68,11 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                User currentUser = _usersControleService.GetUser(HttpContext.User.Identity.Name);
+                var currentUser = await _usersControleService.GetUserByEmailAsync(HttpContext.User.Identity.Name);
                 user.CompanyId = currentUser.CompanyId;
                 user.StartDate = DateTime.Now;
                 user.Status = _context.Statuses.First(st => st.Id == user.UserStatusId);
-                _context.Add(user);
-                await _context.SaveChangesAsync();
+                await _usersControleService.AddUserAsync(user);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -87,22 +87,21 @@ namespace HRM.Controllers
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Users == null)
+            if (id != null && _usersControleService.UsersTableIsNotEmpty())
             {
-                return NotFound();
-            }
+                var user = await _usersControleService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
 
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
+                ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+                ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
+                ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
+                ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
+                return View(user);
             }
-
-            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
-            ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
-            ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
-            return View(user);
+            return NotFound();
         }
 
         // POST: Users/Edit/5
@@ -113,7 +112,7 @@ namespace HRM.Controllers
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Email,StartDate,UserStatusId,UserLevelId,TeamId,RoleTypeId,CompanyId")] User user)
         {
-            User currentUser = _usersControleService.GetUser(HttpContext.User.Identity.Name);
+            var currentUser = await _usersControleService.GetUserByEmailAsync(HttpContext.User.Identity.Name);
             user.CompanyId = currentUser.CompanyId;
             user.Status = _context.Statuses.First(st => st.Id == user.UserStatusId);
             if (id != user.Id)
@@ -125,12 +124,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    await _usersControleService.UpdateUserAsync(user);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UserExists(user.Id))
+                    if (!_usersControleService.UserExists(user.Id))
                     {
                         return NotFound();
                     }
@@ -153,23 +151,11 @@ namespace HRM.Controllers
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Users == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users
-                .Include(u => u.Company)
-                .Include(u => u.RoleType)
-                .Include(u => u.Team)
-                .Include(u => u.UserLevel)
-                .Include(u => u.Status)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _usersControleService.GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
-
             return View(user);
         }
 
@@ -179,23 +165,19 @@ namespace HRM.Controllers
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Users == null)
+            if (!_usersControleService.UsersTableIsNotEmpty())
             {
                 return Problem("Entity set 'HRMContext.Users'  is null.");
             }
-            var user = await _context.Users.FindAsync(id);
+            var user = await _usersControleService.GetUserByIdAsync(id);
+
             if (user != null)
             {
-                _context.Users.Remove(user);
+                await _usersControleService.DeleteUserAsync(user);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UserExists(int id)
-        {
-          return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
     }
 }
