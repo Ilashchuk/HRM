@@ -11,7 +11,7 @@ namespace HRM.Services.UsersServices
 
         public UsersControlService(HRMContext context) => _context = context;
 
-        public async Task<User?> GetUserByEmailAsync(string name) => await _context.Users.FirstOrDefaultAsync(u => u.Email == name)!;
+        public async Task<User?> GetUserByEmailAsync(string? name) => await _context.Users.FirstOrDefaultAsync(u => u.Email == name)!;
         public async Task<User?> GetUserByIdAsync(int? id) => await _context.Users.Include(u => u.Company)
                                                          .Include(u => u.RoleType)
                                                          .Include(u => u.Team)
@@ -20,10 +20,10 @@ namespace HRM.Services.UsersServices
         //public async Task<RoleType?> GetRoleByNameAsync(string name) => await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == name)!;
         //public int GetUserStatusId() => _context.StatusTypes.First(st => st.Name == "User status").Id;
 
-        public async Task<List<User>> GetUsersListForCurrentUserAsync(User currentUser)
+        public async Task<List<User>> GetUsersListForCurrentUserAsync(User? currentUser)
         {
             var HR = await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
-            if (HR != null)
+            if (HR != null && currentUser != null)
             {
                 var users = _context.Users.Include(u => u.Company).Include(u => u.RoleType)
                     .Include(u => u.Team).Include(u => u.UserLevel).Include(u => u.Status)

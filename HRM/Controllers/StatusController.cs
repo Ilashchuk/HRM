@@ -8,17 +8,18 @@ using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
 using HRM.Services.StatusesServices;
+using HRM.Services.StatusTypesServices;
 
 namespace HRM.Controllers
 {
     public class StatusController : Controller
     {
-        //private readonly HRMContext _context;
         private readonly IStatusesControlService _statusesControlService;
-        public StatusController(IStatusesControlService statusesControlService, HRMContext context)
+        private readonly IStatusTypesControlService _statusTypesControlService;
+        public StatusController(IStatusesControlService statusesControlService, IStatusTypesControlService statusTypesControlService)
         {
             _statusesControlService = statusesControlService;
-            //_context = context;
+            _statusTypesControlService = statusTypesControlService;
         }
 
         // GET: Status
@@ -41,9 +42,9 @@ namespace HRM.Controllers
         }
 
         // GET: Status/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["StatusType"] = new SelectList(_context.StatusTypes, "Id", "Name");
+            ViewData["StatusType"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
             return View();
         }
 
@@ -59,7 +60,7 @@ namespace HRM.Controllers
                 await _statusesControlService.AddStatusAsync(status);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["StatusType"] = new SelectList(_context.StatusTypes, "Id", "Name");
+            ViewData["StatusType"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
             return View(status);
         }
 
@@ -72,7 +73,7 @@ namespace HRM.Controllers
             {
                 return NotFound();
             }
-            ViewData["StatusType"] = new SelectList(_context.StatusTypes, "Id", "Name");
+            ViewData["StatusType"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
             return View(status);
         }
 
@@ -107,7 +108,7 @@ namespace HRM.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["StatusTypeId"] = new SelectList(_context.StatusTypes, "Id", "Name");
+            ViewData["StatusTypeId"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
             return View(status);
         }
 

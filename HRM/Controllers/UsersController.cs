@@ -9,19 +9,20 @@ using HRM.Data;
 using HRM.Models;
 using Microsoft.AspNetCore.Authorization;
 using HRM.Services.UsersServices;
+using HRM.Services.StatusesServices;
 
 namespace HRM.Controllers
 {
     [Authorize(Roles = "HR, TeamLead")]
     public class UsersController : Controller
     {
-        //private readonly HRMContext _context;
         private readonly IUsersControlService _usersControleService;
+        private readonly IStatusesControlService _statusesControlService;
 
-        public UsersController(IUsersControlService usersControleService, HRMContext context)
+        public UsersController(IUsersControlService usersControleService, IStatusesControlService statusesControlService)
         {
             _usersControleService = usersControleService;
-            //_context = context;
+            _statusesControlService = statusesControlService;
         }
 
         // GET: Users
@@ -48,13 +49,13 @@ namespace HRM.Controllers
 
         // GET: Users/Create
         [Authorize(Roles = "HR")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
 
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
+            ViewData["Status"] = new SelectList(await _statusesControlService.GetStatusesByStatusTypeIdAsync(_statusesControlService.GetStatusIdWitValueUserStatus()), "Id", "Name");
             return View();
         }
 
@@ -71,7 +72,7 @@ namespace HRM.Controllers
                 var currentUser = await _usersControleService.GetUserByEmailAsync(HttpContext.User.Identity.Name);
                 user.CompanyId = currentUser.CompanyId;
                 user.StartDate = DateTime.Now;
-                user.Status = _context.Statuses.First(st => st.Id == user.UserStatusId);
+                user.Status = await _statusesControlService.GetStatusByIdAsync(user.UserStatusId);
                 await _usersControleService.AddUserAsync(user);
                 return RedirectToAction(nameof(Index));
             }
@@ -79,7 +80,7 @@ namespace HRM.Controllers
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
+            ViewData["Status"] = new SelectList(await _statusesControlService.GetStatusesByStatusTypeIdAsync(_statusesControlService.GetStatusIdWitValueUserStatus()), "Id", "Name");
             return View(user);
         }
 
@@ -98,7 +99,7 @@ namespace HRM.Controllers
                 ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
                 ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
                 ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-                ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
+                ViewData["Status"] = new SelectList(await _statusesControlService.GetStatusesByStatusTypeIdAsync(_statusesControlService.GetStatusIdWitValueUserStatus()), "Id", "Name");
                 return View(user);
             }
             return NotFound();
@@ -114,7 +115,7 @@ namespace HRM.Controllers
         {
             var currentUser = await _usersControleService.GetUserByEmailAsync(HttpContext.User.Identity.Name);
             user.CompanyId = currentUser.CompanyId;
-            user.Status = _context.Statuses.First(st => st.Id == user.UserStatusId);
+            user.Status = await _statusesControlService.GetStatusByIdAsync(user.UserStatusId);
             if (id != user.Id)
             {
                 return NotFound();
@@ -143,7 +144,7 @@ namespace HRM.Controllers
             ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
             ViewData["Team"] = new SelectList(_context.Teams, "Id", "Name");
             ViewData["Level"] = new SelectList(_context.UserLevels, "Id", "Name");
-            ViewData["Status"] = new SelectList(_context.Statuses.Where(s => s.StatusTypeId == _usersControleService.GetUserStatusId()), "Id", "Name");
+            ViewData["Status"] = new SelectList(await _statusesControlService.GetStatusesByStatusTypeIdAsync(_statusesControlService.GetStatusIdWitValueUserStatus()), "Id", "Name");
             return View(user);
         }
 

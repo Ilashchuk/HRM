@@ -9,14 +9,15 @@ namespace HRM.Services.StatusesServices
         private readonly HRMContext _context;
         public StatusesControlService(HRMContext context) => _context = context;
 
-        public async Task<List<Status>> GetStatusesAsync()
-        {
-            var hRMContext = _context.Statuses.Include(s => s.StatusType);
-            return await hRMContext.ToListAsync();
-        }
+        public async Task<List<Status>> GetStatusesAsync() => await _context.Statuses.Include(s => s.StatusType).ToListAsync();
         public async Task<Status?> GetStatusByIdAsync(int? id) => await _context.Statuses.
                                                                     Include(s => s.StatusType).
                                                                     FirstOrDefaultAsync(m => m.Id == id);
+        public async Task<List<Status>?> GetStatusesByStatusTypeIdAsync(int id)
+        {
+            return await _context.Statuses.Where(s => s.StatusTypeId == id).ToListAsync();
+        }
+        public int GetStatusIdWitValueUserStatus() => _context.StatusTypes.First(st => st.Name == "User status").Id;
         public async Task AddStatusAsync(Status status)
         {
             _context.Statuses.Add(status);
@@ -40,5 +41,6 @@ namespace HRM.Services.StatusesServices
         {
             return (_context.Statuses?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        
     }
 }

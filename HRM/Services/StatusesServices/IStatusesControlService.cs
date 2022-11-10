@@ -11,6 +11,8 @@ namespace HRM.Services.StatusesServices
         public Task DeleteStatusAsync(Status status);
         public bool StatusesTableIsNotEmpty();
         public bool StatusExists(int id);
+        public Task<List<Status>?> GetStatusesByStatusTypeIdAsync(int id);
+        public int GetStatusIdWitValueUserStatus();
 
     }
 }

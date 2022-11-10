@@ -7,36 +7,30 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using HRM.Services.StatusTypesServices;
 
 namespace HRM.Controllers
 {
     public class StatusTypesController : Controller
     {
-        private readonly HRMContext _context;
+        private readonly IStatusTypesControlService _statusTypesControlService;
 
-        public StatusTypesController(HRMContext context)
+        public StatusTypesController(IStatusTypesControlService statusTypesControlService)
         {
-            _context = context;
+            _statusTypesControlService = statusTypesControlService;
         }
 
         // GET: StatusTypes
         public async Task<IActionResult> Index()
         {
-              return _context.StatusTypes != null ? 
-                          View(await _context.StatusTypes.ToListAsync()) :
-                          Problem("Entity set 'HRMContext.StatusTypes'  is null.");
+              return View(await _statusTypesControlService.GetStatusTypesAsync());
         }
 
         // GET: StatusTypes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.StatusTypes == null)
-            {
-                return NotFound();
-            }
+            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
 
-            var statusType = await _context.StatusTypes
-                .FirstOrDefaultAsync(m => m.Id == id);
             if (statusType == null)
             {
                 return NotFound();
@@ -60,8 +54,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(statusType);
-                await _context.SaveChangesAsync();
+                await _statusTypesControlService.AddStatusTypeAsync(statusType);
                 return RedirectToAction(nameof(Index));
             }
             return View(statusType);
@@ -70,12 +63,8 @@ namespace HRM.Controllers
         // GET: StatusTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.StatusTypes == null)
-            {
-                return NotFound();
-            }
+            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
 
-            var statusType = await _context.StatusTypes.FindAsync(id);
             if (statusType == null)
             {
                 return NotFound();
@@ -99,12 +88,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(statusType);
-                    await _context.SaveChangesAsync();
+                    await _statusTypesControlService.UpdateStatusTypeAsync(statusType);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!StatusTypeExists(statusType.Id))
+                    if (!_statusTypesControlService.StatusTypeExists(id))
                     {
                         return NotFound();
                     }
@@ -121,13 +109,8 @@ namespace HRM.Controllers
         // GET: StatusTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.StatusTypes == null)
-            {
-                return NotFound();
-            }
+            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
 
-            var statusType = await _context.StatusTypes
-                .FirstOrDefaultAsync(m => m.Id == id);
             if (statusType == null)
             {
                 return NotFound();
@@ -141,23 +124,18 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.StatusTypes == null)
+            if (!_statusTypesControlService.StatusTypesTableIsNotEmpty())
             {
                 return Problem("Entity set 'HRMContext.StatusTypes'  is null.");
             }
-            var statusType = await _context.StatusTypes.FindAsync(id);
+            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
             if (statusType != null)
             {
-                _context.StatusTypes.Remove(statusType);
+                await _statusTypesControlService.DeleteStatusTypeAsync(statusType);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool StatusTypeExists(int id)
-        {
-          return (_context.StatusTypes?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
     }
 }
