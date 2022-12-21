@@ -7,36 +7,31 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using HRM.Services.CompaniesServices;
 
 namespace HRM.Controllers
 {
     public class CompaniesController : Controller
     {
-        private readonly HRMContext _context;
+        private readonly ICompaniesControlService _companiesControlService;
 
-        public CompaniesController(HRMContext context)
+        public CompaniesController(ICompaniesControlService companiesControlService)
         {
-            _context = context;
+            _companiesControlService = companiesControlService;
         }
 
         // GET: Companies
         public async Task<IActionResult> Index()
         {
-              return _context.Companies != null ? 
-                          View(await _context.Companies.ToListAsync()) :
+              return _companiesControlService.NotEmpty() ? 
+                          View(await _companiesControlService.GetListAsync()) :
                           Problem("Entity set 'HRMContext.Companies'  is null.");
         }
 
         // GET: Companies/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Companies == null)
-            {
-                return NotFound();
-            }
-
-            var company = await _context.Companies
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var company = await _companiesControlService.GetByIdAsync(id);
             if (company == null)
             {
                 return NotFound();
@@ -60,8 +55,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(company);
-                await _context.SaveChangesAsync();
+                await _companiesControlService.AddAsync(company);
                 return RedirectToAction(nameof(Index));
             }
             return View(company);
@@ -70,12 +64,7 @@ namespace HRM.Controllers
         // GET: Companies/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Companies == null)
-            {
-                return NotFound();
-            }
-
-            var company = await _context.Companies.FindAsync(id);
+            var company = await _companiesControlService.GetByIdAsync(id);
             if (company == null)
             {
                 return NotFound();
@@ -99,12 +88,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(company);
-                    await _context.SaveChangesAsync();
+                    await _companiesControlService.UpdateAsync(company);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CompanyExists(company.Id))
+                    if (!_companiesControlService.Exists(id))
                     {
                         return NotFound();
                     }
@@ -121,13 +109,7 @@ namespace HRM.Controllers
         // GET: Companies/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Companies == null)
-            {
-                return NotFound();
-            }
-
-            var company = await _context.Companies
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var company = await _companiesControlService.GetByIdAsync(id);
             if (company == null)
             {
                 return NotFound();
@@ -141,23 +123,17 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Companies == null)
+            if (!_companiesControlService.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.Companies'  is null.");
             }
-            var company = await _context.Companies.FindAsync(id);
+            var company = await _companiesControlService.GetByIdAsync(id);
             if (company != null)
             {
-                _context.Companies.Remove(company);
+                await _companiesControlService.DeleteAsync(company);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CompanyExists(int id)
-        {
-          return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
