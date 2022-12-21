@@ -3,6 +3,7 @@ using HRM.Data;
 using HRM.Services.CompaniesServices;
 using HRM.Services.StatusesServices;
 using HRM.Services.StatusTypesServices;
+using HRM.Services.TeamsServices;
 using HRM.Services.UserLevelsServices;
 using HRM.Services.UsersServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -28,6 +29,7 @@ builder.Services.AddScoped<IStatusesControlService, StatusesControlService>();
 builder.Services.AddScoped<IStatusTypesControlService, StatusTypesControlService>();
 builder.Services.AddScoped<ICompaniesControlService, CompaniesControlService>();
 builder.Services.AddScoped<IUserLevelControlService, UserLevelControlService>();
+builder.Services.AddScoped<ITeamsControlService, TeamsControlService>();
 
 var app = builder.Build();
 

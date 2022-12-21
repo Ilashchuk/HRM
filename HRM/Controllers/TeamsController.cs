@@ -7,36 +7,31 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using HRM.Services.TeamsServices;
 
 namespace HRM.Controllers
 {
     public class TeamsController : Controller
     {
-        private readonly HRMContext _context;
+        private readonly ITeamsControlService _teamsControlService;
 
-        public TeamsController(HRMContext context)
+        public TeamsController(ITeamsControlService teamsControlService)
         {
-            _context = context;
+            _teamsControlService = teamsControlService;
         }
 
         // GET: Teams
         public async Task<IActionResult> Index()
         {
-              return _context.Teams != null ? 
-                          View(await _context.Teams.ToListAsync()) :
+              return _teamsControlService.NotEmpty() ? 
+                          View(await _teamsControlService.GetListAsync()) :
                           Problem("Entity set 'HRMContext.Teams'  is null.");
         }
 
         // GET: Teams/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Teams == null)
-            {
-                return NotFound();
-            }
-
-            var team = await _context.Teams
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var team = await _teamsControlService.GetByIdAsync(id);
             if (team == null)
             {
                 return NotFound();
@@ -60,8 +55,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(team);
-                await _context.SaveChangesAsync();
+                await _teamsControlService.AddAsync(team);
                 return RedirectToAction(nameof(Index));
             }
             return View(team);
@@ -70,12 +64,7 @@ namespace HRM.Controllers
         // GET: Teams/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Teams == null)
-            {
-                return NotFound();
-            }
-
-            var team = await _context.Teams.FindAsync(id);
+            var team = await _teamsControlService.GetByIdAsync(id);
             if (team == null)
             {
                 return NotFound();
@@ -99,12 +88,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(team);
-                    await _context.SaveChangesAsync();
+                    await _teamsControlService.UpdateAsync(team);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TeamExists(team.Id))
+                    if (!_teamsControlService.Exists(team.Id))
                     {
                         return NotFound();
                     }
@@ -121,13 +109,7 @@ namespace HRM.Controllers
         // GET: Teams/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Teams == null)
-            {
-                return NotFound();
-            }
-
-            var team = await _context.Teams
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var team = await _teamsControlService.GetByIdAsync(id);
             if (team == null)
             {
                 return NotFound();
@@ -141,23 +123,17 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Teams == null)
+            if (!_teamsControlService.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.Teams'  is null.");
             }
-            var team = await _context.Teams.FindAsync(id);
+            var team = await _teamsControlService.GetByIdAsync(id);
             if (team != null)
             {
-                _context.Teams.Remove(team);
+                await _teamsControlService.DeleteAsync(team);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TeamExists(int id)
-        {
-          return (_context.Teams?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
