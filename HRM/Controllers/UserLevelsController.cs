@@ -13,8 +13,8 @@ namespace HRM.Controllers
 {
     public class UserLevelsController : Controller
     {
-        private readonly IUserLevelControlService _userLevelControlService;
-        public UserLevelsController(IUserLevelControlService userLevelControlService)
+        private readonly IGenericControlSerice _userLevelControlService;
+        public UserLevelsController(IGenericControlSerice userLevelControlService)
         {
             _userLevelControlService = userLevelControlService;
         }

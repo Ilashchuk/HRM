@@ -12,14 +12,6 @@ namespace HRM.Services.UsersServices
         public UsersControlService(HRMContext context) => _context = context;
 
         public async Task<User?> GetUserByEmailAsync(string? name) => await _context.Users.FirstOrDefaultAsync(u => u.Email == name)!;
-        public async Task<User?> GetUserByIdAsync(int? id) => await _context.Users.Include(u => u.Company)
-                                                         .Include(u => u.RoleType)
-                                                         .Include(u => u.Team)
-                                                         .Include(u => u.UserLevel)
-                                                         .Include(u => u.Status).FirstOrDefaultAsync(u => u.Id == id);
-        //public async Task<RoleType?> GetRoleByNameAsync(string name) => await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == name)!;
-        //public int GetUserStatusId() => _context.StatusTypes.First(st => st.Name == "User status").Id;
-
         public async Task<List<User>> GetUsersListForCurrentUserAsync(User? currentUser)
         {
             var HR = await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
@@ -33,30 +25,36 @@ namespace HRM.Services.UsersServices
                 return users.Where(u => u.TeamId == currentUser.TeamId).ToList();
             }
             return new List<User>();
-            
+
         }
-        public async Task AddUserAsync(User user)
+        public async Task<List<User>> GetListAsync() => await _context.Users.ToListAsync();
+        public async Task<User?> GetByIdAsync(int? id) => await _context.Users.Include(u => u.Company)
+                                                         .Include(u => u.RoleType)
+                                                         .Include(u => u.Team)
+                                                         .Include(u => u.UserLevel)
+                                                         .Include(u => u.Status).FirstOrDefaultAsync(u => u.Id == id);
+        public async Task AddAsync(User user)
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteUserAsync(User user)
+        public async Task DeleteAsync(User user)
         {
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
-        public async Task UpdateUserAsync(User user)
+        public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
-        public bool UserExists(int id)
+        public bool Exists(int id)
         {
             return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-        public bool UsersTableIsNotEmpty()
+        public bool NotEmpty()
         {
             return (_context.Users?.Any()).GetValueOrDefault();
         }

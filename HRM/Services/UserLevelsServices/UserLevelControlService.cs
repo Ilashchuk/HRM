@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Services.UserLevelsServices
 {
-    public class UserLevelControlService : IUserLevelControlService
+    public class UserLevelControlService : IGenericControlService<UserLevel>
     {
         private readonly HRMContext _context;
         public UserLevelControlService(HRMContext context) => _context = context;

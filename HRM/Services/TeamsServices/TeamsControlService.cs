@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Services.TeamsServices
 {
-    public class TeamsControlService : ITeamsControlService
+    public class TeamsControlService : IGenericControlService<Team>
     {
         private readonly HRMContext _context;
         public TeamsControlService(HRMContext context) => _context = context;

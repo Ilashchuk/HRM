@@ -1,5 +1,7 @@
 using HRM;
 using HRM.Data;
+using HRM.Models;
+using HRM.Services;
 using HRM.Services.CompaniesServices;
 using HRM.Services.StatusesServices;
 using HRM.Services.StatusTypesServices;
@@ -26,10 +28,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 //builder.Services.AddScoped<IMyDependency, MyDependency>();
 builder.Services.AddScoped<IUsersControlService, UsersControlService>();
 builder.Services.AddScoped<IStatusesControlService, StatusesControlService>();
-builder.Services.AddScoped<IStatusTypesControlService, StatusTypesControlService>();
-builder.Services.AddScoped<ICompaniesControlService, CompaniesControlService>();
-builder.Services.AddScoped<IUserLevelControlService, UserLevelControlService>();
-builder.Services.AddScoped<ITeamsControlService, TeamsControlService>();
+builder.Services.AddScoped<IGenericControlService<StatusType>, StatusTypesControlService>();
+builder.Services.AddScoped<IGenericControlService<Company>, CompaniesControlService>();
+builder.Services.AddScoped<IGenericControlService<UserLevel>, UserLevelControlService>();
+builder.Services.AddScoped<IGenericControlService<Team>, TeamsControlService>();
 
 var app = builder.Build();
 

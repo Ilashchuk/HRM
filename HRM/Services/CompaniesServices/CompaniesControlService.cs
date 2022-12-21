@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Services.CompaniesServices
 {
-    public class CompaniesControlService : ICompaniesControlService
+    public class CompaniesControlService : IGenericControlService<Company>
     {
         private readonly HRMContext _context;
 
