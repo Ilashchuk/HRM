@@ -1,6 +1,7 @@
 ﻿using HRM.Data;
 using HRM.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace HRM.Services
 {
@@ -9,7 +10,13 @@ namespace HRM.Services
         private readonly HRMContext _context;
         public GenericControlService(HRMContext context) => _context = context;
 
-        public async Task<List<T>> GetListAsync() => await _context.
+        public DbSet<T> GetTable()
+        {
+            Type genericType = typeof(T);
+            Type contextType = typeof(HRMContext);
+            var prop = contextType.GetProperties().FirstOrDefault(p => p.PropertyType.Name == genericType.Name);
+            return (DbSet<T>)prop;
+        }
         public async Task<Team?> GetByIdAsync(int? id) => await _context.Teams.FirstOrDefaultAsync(u => u.Id == id);
         public async Task AddAsync(Team team)
         {
