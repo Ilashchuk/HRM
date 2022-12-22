@@ -9,29 +9,30 @@ using HRM.Data;
 using HRM.Models;
 using HRM.Services.StatusesServices;
 using HRM.Services.StatusTypesServices;
+using HRM.Services;
 
 namespace HRM.Controllers
 {
     public class StatusController : Controller
     {
-        private readonly IStatusesControlService _statusesControlService;
-        private readonly IStatusTypesControlService _statusTypesControlService;
-        public StatusController(IStatusesControlService statusesControlService, IStatusTypesControlService statusTypesControlService)
+        private readonly IStatusesControlService _statusesCS;
+        private readonly IGenericControlService<StatusType> _statusTypesCS;
+        public StatusController(IStatusesControlService statusesControlService, IGenericControlService<StatusType> statusTypesControlService)
         {
-            _statusesControlService = statusesControlService;
-            _statusTypesControlService = statusTypesControlService;
+            _statusesCS = statusesControlService;
+            _statusTypesCS = statusTypesControlService;
         }
 
         // GET: Status
         public async Task<IActionResult> Index()
         {
-            return View(await _statusesControlService.GetStatusesAsync());
+            return View(await _statusesCS.GetListAsync());
         }
 
         // GET: Status/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            var status = await _statusesControlService.GetStatusByIdAsync(id);
+            var status = await _statusesCS.GetByIdAsync(id);
 
             if (status == null)
             {
@@ -44,7 +45,7 @@ namespace HRM.Controllers
         // GET: Status/Create
         public async Task<IActionResult> Create()
         {
-            ViewData["StatusType"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
+            ViewData["StatusType"] = new SelectList(await _statusTypesCS.GetListAsync(), "Id", "Name");
             return View();
         }
 
@@ -57,23 +58,23 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _statusesControlService.AddStatusAsync(status);
+                await _statusesCS.AddAsync(status);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["StatusType"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
+            ViewData["StatusType"] = new SelectList(await _statusTypesCS.GetListAsync(), "Id", "Name");
             return View(status);
         }
 
         // GET: Status/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            var status = await _statusesControlService.GetStatusByIdAsync(id);
+            var status = await _statusesCS.GetByIdAsync(id);
 
             if (status == null)
             {
                 return NotFound();
             }
-            ViewData["StatusType"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
+            ViewData["StatusType"] = new SelectList(await _statusTypesCS.GetListAsync(), "Id", "Name");
             return View(status);
         }
 
@@ -93,11 +94,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    await _statusesControlService.UpdateStatusAsync(status);
+                    await _statusesCS.UpdateAsync(status);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_statusesControlService.StatusExists(status.Id))
+                    if (!_statusesCS.Exists(status.Id))
                     {
                         return NotFound();
                     }
@@ -108,14 +109,14 @@ namespace HRM.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["StatusTypeId"] = new SelectList(await _statusTypesControlService.GetStatusTypesAsync(), "Id", "Name");
+            ViewData["StatusTypeId"] = new SelectList(await _statusTypesCS.GetListAsync(), "Id", "Name");
             return View(status);
         }
 
         // GET: Status/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var status = await _statusesControlService.GetStatusByIdAsync(id);
+            var status = await _statusesCS.GetByIdAsync(id);
 
             if (status == null)
             {
@@ -130,14 +131,14 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (!_statusesControlService.StatusesTableIsNotEmpty())
+            if (!_statusesCS.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.Statuses'  is null.");
             }
-            var status = await _statusesControlService.GetStatusByIdAsync(id);
+            var status = await _statusesCS.GetByIdAsync(id);
             if (status != null)
             {
-                await _statusesControlService.DeleteStatusAsync(status);
+                await _statusesCS.DeleteAsync(status);
             }
 
             return RedirectToAction(nameof(Index));

@@ -8,29 +8,30 @@ using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
 using HRM.Services.UserLevelsServices;
+using HRM.Services;
 
 namespace HRM.Controllers
 {
     public class UserLevelsController : Controller
     {
-        private readonly IGenericControlSerice _userLevelControlService;
-        public UserLevelsController(IGenericControlSerice userLevelControlService)
+        private readonly IGenericControlService<UserLevel> _userLevelCS;
+        public UserLevelsController(IGenericControlService<UserLevel> userLevelControlService)
         {
-            _userLevelControlService = userLevelControlService;
+            _userLevelCS = userLevelControlService;
         }
 
         // GET: UserLevels
         public async Task<IActionResult> Index()
         {
-              return _userLevelControlService.NotEmpty() ? 
-                          View(await _userLevelControlService.GetListAsync()) :
+              return _userLevelCS.NotEmpty() ? 
+                          View(await _userLevelCS.GetListAsync()) :
                           Problem("Entity set 'HRMContext.UserLevels'  is null.");
         }
 
         // GET: UserLevels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            var userLevel = await _userLevelControlService.GetByIdAsync(id);
+            var userLevel = await _userLevelCS.GetByIdAsync(id);
             if (userLevel == null)
             {
                 return NotFound();
@@ -54,7 +55,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _userLevelControlService.AddAsync(userLevel);
+                await _userLevelCS.AddAsync(userLevel);
                 return RedirectToAction(nameof(Index));
             }
             return View(userLevel);
@@ -63,7 +64,7 @@ namespace HRM.Controllers
         // GET: UserLevels/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            var userLevel = await _userLevelControlService.GetByIdAsync(id);
+            var userLevel = await _userLevelCS.GetByIdAsync(id);
             if (userLevel == null)
             {
                 return NotFound();
@@ -87,11 +88,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    await _userLevelControlService.UpdateAsync(userLevel);
+                    await _userLevelCS.UpdateAsync(userLevel);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_userLevelControlService.Exists(userLevel.Id))
+                    if (!_userLevelCS.Exists(userLevel.Id))
                     {
                         return NotFound();
                     }
@@ -108,7 +109,7 @@ namespace HRM.Controllers
         // GET: UserLevels/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var userLevel = await _userLevelControlService.GetByIdAsync(id);
+            var userLevel = await _userLevelCS.GetByIdAsync(id);
             if (userLevel == null)
             {
                 return NotFound();
@@ -122,14 +123,14 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (!_userLevelControlService.NotEmpty())
+            if (!_userLevelCS.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.UserLevels'  is null.");
             }
-            var userLevel = await _userLevelControlService.GetByIdAsync(id);
+            var userLevel = await _userLevelCS.GetByIdAsync(id);
             if (userLevel != null)
             {
-                await _userLevelControlService.DeleteAsync(userLevel);
+                await _userLevelCS.DeleteAsync(userLevel);
             }
             
             return RedirectToAction(nameof(Index));

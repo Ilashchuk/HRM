@@ -8,28 +8,29 @@ using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
 using HRM.Services.StatusTypesServices;
+using HRM.Services;
 
 namespace HRM.Controllers
 {
     public class StatusTypesController : Controller
     {
-        private readonly IStatusTypesControlService _statusTypesControlService;
+        private readonly IGenericControlService<StatusType> _statusTypesCS;
 
-        public StatusTypesController(IStatusTypesControlService statusTypesControlService)
+        public StatusTypesController(IGenericControlService<StatusType> statusTypesControlService)
         {
-            _statusTypesControlService = statusTypesControlService;
+            _statusTypesCS = statusTypesControlService;
         }
 
         // GET: StatusTypes
         public async Task<IActionResult> Index()
         {
-              return View(await _statusTypesControlService.GetStatusTypesAsync());
+              return View(await _statusTypesCS.GetListAsync());
         }
 
         // GET: StatusTypes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
+            var statusType = await _statusTypesCS.GetByIdAsync(id);
 
             if (statusType == null)
             {
@@ -54,7 +55,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _statusTypesControlService.AddStatusTypeAsync(statusType);
+                await _statusTypesCS.AddAsync(statusType);
                 return RedirectToAction(nameof(Index));
             }
             return View(statusType);
@@ -63,7 +64,7 @@ namespace HRM.Controllers
         // GET: StatusTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
+            var statusType = await _statusTypesCS.GetByIdAsync(id);
 
             if (statusType == null)
             {
@@ -88,11 +89,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    await _statusTypesControlService.UpdateStatusTypeAsync(statusType);
+                    await _statusTypesCS.UpdateAsync(statusType);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_statusTypesControlService.StatusTypeExists(id))
+                    if (!_statusTypesCS.Exists(id))
                     {
                         return NotFound();
                     }
@@ -109,7 +110,7 @@ namespace HRM.Controllers
         // GET: StatusTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
+            var statusType = await _statusTypesCS.GetByIdAsync(id);
 
             if (statusType == null)
             {
@@ -124,14 +125,14 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (!_statusTypesControlService.StatusTypesTableIsNotEmpty())
+            if (!_statusTypesCS.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.StatusTypes'  is null.");
             }
-            var statusType = await _statusTypesControlService.GetStatusTypeByIdAsync(id);
+            var statusType = await _statusTypesCS.GetByIdAsync(id);
             if (statusType != null)
             {
-                await _statusTypesControlService.DeleteStatusTypeAsync(statusType);
+                await _statusTypesCS.DeleteAsync(statusType);
             }
             
             return RedirectToAction(nameof(Index));
