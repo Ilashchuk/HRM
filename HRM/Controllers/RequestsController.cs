@@ -7,38 +7,40 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using HRM.Services;
+using HRM.Services.StatusesServices;
+using HRM.Services.UsersServices;
 
 namespace HRM.Controllers
 {
     public class RequestsController : Controller
     {
-        private readonly HRMContext _context;
+        private readonly IGenericControlService<Request> _requestCS;
+        private readonly IGenericControlService<RequestType> _requestTypeCS;
+        private readonly IStatusesControlService _statusesCS;
+        private readonly IUsersControlService _usersCS;
 
-        public RequestsController(HRMContext context)
+        public RequestsController(IGenericControlService<Request> requestCS,
+            IGenericControlService<RequestType> requestTypeCS,
+            IStatusesControlService statusesCS,
+            IUsersControlService usersCS)
         {
-            _context = context;
+            _requestCS = requestCS;
+            _requestTypeCS = requestTypeCS;
+            _statusesCS = statusesCS;
+            _usersCS = usersCS;
         }
 
         // GET: Requests
         public async Task<IActionResult> Index()
         {
-            var hRMContext = _context.Requests.Include(r => r.RequestType).Include(r => r.Status).Include(r => r.User);
-            return View(await hRMContext.ToListAsync());
+            return View(await _requestCS.GetListAsync());
         }
 
         // GET: Requests/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Requests == null)
-            {
-                return NotFound();
-            }
-
-            var request = await _context.Requests
-                .Include(r => r.RequestType)
-                .Include(r => r.Status)
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var request = await _requestCS.GetByIdAsync(id);
             if (request == null)
             {
                 return NotFound();
@@ -48,11 +50,11 @@ namespace HRM.Controllers
         }
 
         // GET: Requests/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["RequestTypeId"] = new SelectList(_context.RequestTypes, "Id", "Id");
-            ViewData["StatusId"] = new SelectList(_context.Statuses, "Id", "Id");
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id");
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id");
+            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id");
             return View();
         }
 
@@ -65,32 +67,26 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(request);
-                await _context.SaveChangesAsync();
+                await _requestCS.AddAsync(request);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RequestTypeId"] = new SelectList(_context.RequestTypes, "Id", "Id", request.RequestTypeId);
-            ViewData["StatusId"] = new SelectList(_context.Statuses, "Id", "Id", request.StatusId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", request.UserId);
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id", request.RequestTypeId);
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id", request.StatusId);
+            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id", request.UserId);
             return View(request);
         }
 
         // GET: Requests/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Requests == null)
-            {
-                return NotFound();
-            }
-
-            var request = await _context.Requests.FindAsync(id);
+            var request = await _requestCS.GetByIdAsync(id);
             if (request == null)
             {
                 return NotFound();
             }
-            ViewData["RequestTypeId"] = new SelectList(_context.RequestTypes, "Id", "Id", request.RequestTypeId);
-            ViewData["StatusId"] = new SelectList(_context.Statuses, "Id", "Id", request.StatusId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", request.UserId);
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id", request.RequestTypeId);
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id", request.StatusId);
+            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id", request.UserId);
             return View(request);
         }
 
@@ -110,12 +106,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(request);
-                    await _context.SaveChangesAsync();
+                    await _requestCS.UpdateAsync(request);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RequestExists(request.Id))
+                    if (!_requestCS.Exists(request.Id))
                     {
                         return NotFound();
                     }
@@ -126,25 +121,16 @@ namespace HRM.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RequestTypeId"] = new SelectList(_context.RequestTypes, "Id", "Id", request.RequestTypeId);
-            ViewData["StatusId"] = new SelectList(_context.Statuses, "Id", "Id", request.StatusId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", request.UserId);
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id", request.RequestTypeId);
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id", request.StatusId);
+            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id", request.UserId);
             return View(request);
         }
 
         // GET: Requests/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Requests == null)
-            {
-                return NotFound();
-            }
-
-            var request = await _context.Requests
-                .Include(r => r.RequestType)
-                .Include(r => r.Status)
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var request = await _requestCS.GetByIdAsync(id);
             if (request == null)
             {
                 return NotFound();
@@ -158,23 +144,17 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Requests == null)
+            if (!_requestCS.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.Requests'  is null.");
             }
-            var request = await _context.Requests.FindAsync(id);
+            var request = await _requestCS.GetByIdAsync(id);
             if (request != null)
             {
-                _context.Requests.Remove(request);
+                await _requestCS.DeleteAsync(request);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool RequestExists(int id)
-        {
-          return (_context.Requests?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

@@ -7,36 +7,31 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using HRM.Services;
 
 namespace HRM.Controllers
 {
     public class RoleTypesController : Controller
     {
-        private readonly HRMContext _context;
+        private readonly IGenericControlService<RoleType> _roleTypeCS;
 
-        public RoleTypesController(HRMContext context)
+        public RoleTypesController(IGenericControlService<RoleType> roleTypeCS)
         {
-            _context = context;
+            _roleTypeCS = roleTypeCS;
         }
 
         // GET: RoleTypes
         public async Task<IActionResult> Index()
         {
-              return _context.RoleTypes != null ? 
-                          View(await _context.RoleTypes.ToListAsync()) :
+              return _roleTypeCS.NotEmpty() ? 
+                          View(await _roleTypeCS.GetListAsync()) :
                           Problem("Entity set 'HRMContext.RoleTypes'  is null.");
         }
 
         // GET: RoleTypes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.RoleTypes == null)
-            {
-                return NotFound();
-            }
-
-            var roleType = await _context.RoleTypes
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var roleType = await _roleTypeCS.GetByIdAsync(id);
             if (roleType == null)
             {
                 return NotFound();
@@ -60,8 +55,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(roleType);
-                await _context.SaveChangesAsync();
+                await _roleTypeCS.AddAsync(roleType);
                 return RedirectToAction(nameof(Index));
             }
             return View(roleType);
@@ -70,12 +64,7 @@ namespace HRM.Controllers
         // GET: RoleTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.RoleTypes == null)
-            {
-                return NotFound();
-            }
-
-            var roleType = await _context.RoleTypes.FindAsync(id);
+            var roleType = await _roleTypeCS.GetByIdAsync(id);
             if (roleType == null)
             {
                 return NotFound();
@@ -99,12 +88,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(roleType);
-                    await _context.SaveChangesAsync();
+                    await _roleTypeCS.UpdateAsync(roleType);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RoleTypeExists(roleType.Id))
+                    if (!_roleTypeCS.Exists(id))
                     {
                         return NotFound();
                     }
@@ -121,13 +109,7 @@ namespace HRM.Controllers
         // GET: RoleTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.RoleTypes == null)
-            {
-                return NotFound();
-            }
-
-            var roleType = await _context.RoleTypes
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var roleType = await _roleTypeCS.GetByIdAsync(id);
             if (roleType == null)
             {
                 return NotFound();
@@ -141,23 +123,17 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.RoleTypes == null)
+            if (!_roleTypeCS.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.RoleTypes'  is null.");
             }
-            var roleType = await _context.RoleTypes.FindAsync(id);
+            var roleType = await _roleTypeCS.GetByIdAsync(id);
             if (roleType != null)
             {
-                _context.RoleTypes.Remove(roleType);
+                await _roleTypeCS.DeleteAsync(roleType);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool RoleTypeExists(int id)
-        {
-          return (_context.RoleTypes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

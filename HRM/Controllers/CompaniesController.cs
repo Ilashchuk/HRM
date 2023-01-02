@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
-using HRM.Services.CompaniesServices;
 using HRM.Services;
 
 namespace HRM.Controllers

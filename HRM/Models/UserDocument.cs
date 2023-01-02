@@ -7,5 +7,9 @@
         public string? DocumentLinck { get; set; }
 
         public User? User { get; set; }
+        public override int GetHashCode()
+        {
+            return Id;
+        }
     }
 }

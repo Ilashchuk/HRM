@@ -7,36 +7,31 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using HRM.Services;
 
 namespace HRM.Controllers
 {
     public class RequestTypesController : Controller
     {
-        private readonly HRMContext _context;
+        private readonly IGenericControlService<RequestType> _requestTypeCS;
 
-        public RequestTypesController(HRMContext context)
+        public RequestTypesController(IGenericControlService<RequestType> requestTypeCS)
         {
-            _context = context;
+            _requestTypeCS = requestTypeCS;
         }
 
         // GET: RequestTypes
         public async Task<IActionResult> Index()
         {
-              return _context.RequestTypes != null ? 
-                          View(await _context.RequestTypes.ToListAsync()) :
+              return _requestTypeCS.NotEmpty() ? 
+                          View(await _requestTypeCS.GetListAsync()) :
                           Problem("Entity set 'HRMContext.RequestTypes'  is null.");
         }
 
         // GET: RequestTypes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.RequestTypes == null)
-            {
-                return NotFound();
-            }
-
-            var requestType = await _context.RequestTypes
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var requestType = await _requestTypeCS.GetByIdAsync(id);
             if (requestType == null)
             {
                 return NotFound();
@@ -60,8 +55,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(requestType);
-                await _context.SaveChangesAsync();
+                await _requestTypeCS.AddAsync(requestType);
                 return RedirectToAction(nameof(Index));
             }
             return View(requestType);
@@ -70,12 +64,7 @@ namespace HRM.Controllers
         // GET: RequestTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.RequestTypes == null)
-            {
-                return NotFound();
-            }
-
-            var requestType = await _context.RequestTypes.FindAsync(id);
+            var requestType = await _requestTypeCS.GetByIdAsync(id);
             if (requestType == null)
             {
                 return NotFound();
@@ -99,12 +88,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(requestType);
-                    await _context.SaveChangesAsync();
+                    await _requestTypeCS.UpdateAsync(requestType);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RequestTypeExists(requestType.Id))
+                    if (!_requestTypeCS.Exists(id))
                     {
                         return NotFound();
                     }
@@ -121,13 +109,7 @@ namespace HRM.Controllers
         // GET: RequestTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.RequestTypes == null)
-            {
-                return NotFound();
-            }
-
-            var requestType = await _context.RequestTypes
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var requestType = await _requestTypeCS.GetByIdAsync(id);
             if (requestType == null)
             {
                 return NotFound();
@@ -141,23 +123,17 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.RequestTypes == null)
+            if (!_requestTypeCS.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.RequestTypes'  is null.");
             }
-            var requestType = await _context.RequestTypes.FindAsync(id);
+            var requestType = await _requestTypeCS.GetByIdAsync(id);
             if (requestType != null)
             {
-                _context.RequestTypes.Remove(requestType);
+                await _requestTypeCS.DeleteAsync(requestType);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool RequestTypeExists(int id)
-        {
-          return (_context.RequestTypes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

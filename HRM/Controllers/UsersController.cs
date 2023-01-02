@@ -21,16 +21,19 @@ namespace HRM.Controllers
         private readonly IStatusesControlService _statusesCS;
         private readonly IGenericControlService<Team> _teamsCS;
         private readonly IGenericControlService<UserLevel> _userLevelCS;
+        private readonly IGenericControlService<RoleType> _roleTypeCS;
 
         public UsersController(IUsersControlService usersControleService, 
             IStatusesControlService statusesControlService,
             IGenericControlService<Team> teamsControlService,
-            IGenericControlService<UserLevel> userLevelControlService)
+            IGenericControlService<UserLevel> userLevelControlService,
+            IGenericControlService<RoleType> roleTypeCS)
         {
             _usersCS = usersControleService;
             _statusesCS = statusesControlService;
             _teamsCS = teamsControlService;
             _userLevelCS = userLevelControlService;
+            _roleTypeCS = roleTypeCS;
         }
 
         // GET: Users
@@ -59,7 +62,7 @@ namespace HRM.Controllers
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> Create()
         {
-            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+            ViewData["Role"] = new SelectList(await _roleTypeCS.GetListAsync(), "Id", "Name");
             ViewData["Team"] = new SelectList(await _teamsCS.GetListAsync(), "Id", "Name");
             ViewData["Level"] = new SelectList(await _userLevelCS.GetListAsync(), "Id", "Name");
             ViewData["Status"] = new SelectList(await _statusesCS.GetByStatusTypeIdAsync(_statusesCS.GetIdWitValueUserStatus()), "Id", "Name");
@@ -84,7 +87,7 @@ namespace HRM.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+            ViewData["Role"] = new SelectList(await _roleTypeCS.GetListAsync(), "Id", "Name");
             ViewData["Team"] = new SelectList(await _teamsCS.GetListAsync(), "Id", "Name");
             ViewData["Level"] = new SelectList(await _userLevelCS.GetListAsync(), "Id", "Name");
             ViewData["Status"] = new SelectList(await _statusesCS.GetByStatusTypeIdAsync(_statusesCS.GetIdWitValueUserStatus()), "Id", "Name");
@@ -103,7 +106,7 @@ namespace HRM.Controllers
                     return NotFound();
                 }
 
-                ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+                ViewData["Role"] = new SelectList(await _roleTypeCS.GetListAsync(), "Id", "Name");
                 ViewData["Team"] = new SelectList(await _teamsCS.GetListAsync(), "Id", "Name");
                 ViewData["Level"] = new SelectList(await _userLevelCS.GetListAsync(), "Id", "Name");
                 ViewData["Status"] = new SelectList(await _statusesCS.GetByStatusTypeIdAsync(_statusesCS.GetIdWitValueUserStatus()), "Id", "Name");
@@ -148,7 +151,7 @@ namespace HRM.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["Role"] = new SelectList(_context.RoleTypes, "Id", "Name");
+            ViewData["Role"] = new SelectList(await _roleTypeCS.GetListAsync(), "Id", "Name");
             ViewData["Team"] = new SelectList(await _teamsCS.GetListAsync(), "Id", "Name");
             ViewData["Level"] = new SelectList(await _userLevelCS.GetListAsync(), "Id", "Name");
             ViewData["Status"] = new SelectList(await _statusesCS.GetByStatusTypeIdAsync(_statusesCS.GetIdWitValueUserStatus()), "Id", "Name");

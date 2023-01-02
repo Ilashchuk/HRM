@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
 using HRM.Services.StatusesServices;
-using HRM.Services.StatusTypesServices;
 using HRM.Services;
 
 namespace HRM.Controllers

@@ -7,36 +7,31 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM.Data;
 using HRM.Models;
+using HRM.Services;
 
 namespace HRM.Controllers
 {
     public class SettingsController : Controller
     {
-        private readonly HRMContext _context;
+        private readonly IGenericControlService<Setting> _settingsCS;
 
-        public SettingsController(HRMContext context)
+        public SettingsController(IGenericControlService<Setting> settingsCS)
         {
-            _context = context;
+            _settingsCS = settingsCS;
         }
 
         // GET: Settings
         public async Task<IActionResult> Index()
         {
-              return _context.Settings != null ? 
-                          View(await _context.Settings.ToListAsync()) :
+              return _settingsCS.NotEmpty() ? 
+                          View(await _settingsCS.GetListAsync()) :
                           Problem("Entity set 'HRMContext.Settings'  is null.");
         }
 
         // GET: Settings/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Settings == null)
-            {
-                return NotFound();
-            }
-
-            var setting = await _context.Settings
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var setting = await _settingsCS.GetByIdAsync(id);
             if (setting == null)
             {
                 return NotFound();
@@ -60,8 +55,7 @@ namespace HRM.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(setting);
-                await _context.SaveChangesAsync();
+                await _settingsCS.AddAsync(setting);
                 return RedirectToAction(nameof(Index));
             }
             return View(setting);
@@ -70,12 +64,7 @@ namespace HRM.Controllers
         // GET: Settings/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Settings == null)
-            {
-                return NotFound();
-            }
-
-            var setting = await _context.Settings.FindAsync(id);
+            var setting = await _settingsCS.GetByIdAsync(id);
             if (setting == null)
             {
                 return NotFound();
@@ -99,12 +88,11 @@ namespace HRM.Controllers
             {
                 try
                 {
-                    _context.Update(setting);
-                    await _context.SaveChangesAsync();
+                    await _settingsCS.UpdateAsync(setting);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SettingExists(setting.Id))
+                    if (!_settingsCS.Exists(setting.Id))
                     {
                         return NotFound();
                     }
@@ -121,13 +109,7 @@ namespace HRM.Controllers
         // GET: Settings/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Settings == null)
-            {
-                return NotFound();
-            }
-
-            var setting = await _context.Settings
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var setting = await _settingsCS.GetByIdAsync(id);
             if (setting == null)
             {
                 return NotFound();
@@ -141,23 +123,17 @@ namespace HRM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Settings == null)
+            if (!_settingsCS.NotEmpty())
             {
                 return Problem("Entity set 'HRMContext.Settings'  is null.");
             }
-            var setting = await _context.Settings.FindAsync(id);
+            var setting = await _settingsCS.GetByIdAsync(id);
             if (setting != null)
             {
-                _context.Settings.Remove(setting);
+                await _settingsCS.DeleteAsync(setting);
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool SettingExists(int id)
-        {
-          return (_context.Settings?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

@@ -28,10 +28,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 //builder.Services.AddScoped<IMyDependency, MyDependency>();
 builder.Services.AddScoped<IUsersControlService, UsersControlService>();
 builder.Services.AddScoped<IStatusesControlService, StatusesControlService>();
-builder.Services.AddScoped<IGenericControlService<StatusType>, StatusTypesControlService>();
-builder.Services.AddScoped<IGenericControlService<Company>, CompaniesControlService>();
-builder.Services.AddScoped<IGenericControlService<UserLevel>, UserLevelControlService>();
-builder.Services.AddScoped<IGenericControlService<Team>, TeamsControlService>();
+builder.Services.AddScoped<IGenericControlService<StatusType>, GenericControlService<StatusType>>();
+builder.Services.AddScoped<IGenericControlService<Company>, GenericControlService<Company>>();
+builder.Services.AddScoped<IGenericControlService<UserLevel>, GenericControlService<UserLevel>>();
+builder.Services.AddScoped<IGenericControlService<Team>, GenericControlService<Team>>();
+builder.Services.AddScoped<IGenericControlService<Setting>, GenericControlService<Setting>>();
+builder.Services.AddScoped<IGenericControlService<RoleType>, GenericControlService<RoleType>>();
+builder.Services.AddScoped<IGenericControlService<RequestType>, GenericControlService<RequestType>>();
+builder.Services.AddScoped<IGenericControlService<Request>, GenericControlService<Request>>();
+builder.Services.AddScoped<IGenericControlService<OffitialHolliday>, GenericControlService<OffitialHolliday>>();
 
 var app = builder.Build();
 
