@@ -39,7 +39,7 @@ builder.Services.AddScoped<IGenericControlService<Company>, CompaniesControlServ
 builder.Services.AddScoped<IGenericControlService<UserLevel>, UserLevelsControlService>();
 builder.Services.AddScoped<IGenericControlService<Team>, TeamsControlService>();
 builder.Services.AddScoped<IGenericControlService<Setting>, SettingsControlService>();
-builder.Services.AddScoped<IGenericControlService<RoleType>, HRM.Services.RoleTypesServices.RoleTypesControlService>();
+builder.Services.AddScoped<IGenericControlService<RoleType>, RoleTypesControlService>();
 builder.Services.AddScoped<IGenericControlService<RequestType>, RequestTipesControlService>();
 builder.Services.AddScoped<IGenericControlService<Request>, RequestsControlService>();
 builder.Services.AddScoped<IGenericControlService<OffitialHolliday>, OffitialHollidaysControlService>();
