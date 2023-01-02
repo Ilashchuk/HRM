@@ -32,9 +32,5 @@ namespace HRM.Models
         public UserLevel? UserLevel { get; set; }
         public Team? Team { get; set; }
         public Company? Company { get; set; }
-        public override int GetHashCode()
-        {
-            return Id;
-        }
     }
 }

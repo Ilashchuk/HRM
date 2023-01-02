@@ -1,7 +1,5 @@
 ﻿using HRM.Data;
-using HRM.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace HRM.Services
 {

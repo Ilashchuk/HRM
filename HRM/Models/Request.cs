@@ -19,9 +19,5 @@ namespace HRM.Models
         public User? User { get; set; }
         public RequestType? RequestType { get; set; }
         public Status? Status { get; set; }
-        public override int GetHashCode()
-        {
-            return Id;
-        }
     }
 }

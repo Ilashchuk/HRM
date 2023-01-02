@@ -1,6 +1,6 @@
 ﻿namespace HRM.Services
 {
-    public interface IGenericControlService <T>
+    public interface IGenericControlService<T>
     {
         public Task<List<T>> GetListAsync();
         public Task<T?> GetByIdAsync(int? id);
