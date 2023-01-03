@@ -10,17 +10,19 @@ using HRM.Models;
 using HRM.Services;
 using HRM.Services.StatusesServices;
 using HRM.Services.UsersServices;
+using Microsoft.AspNetCore.Authorization;
+using HRM.Services.RequestsServices;
 
 namespace HRM.Controllers
 {
     public class RequestsController : Controller
     {
-        private readonly IGenericControlService<Request> _requestCS;
+        private readonly IRequestsControlService _requestCS;
         private readonly IGenericControlService<RequestType> _requestTypeCS;
         private readonly IStatusesControlService _statusesCS;
         private readonly IUsersControlService _usersCS;
 
-        public RequestsController(IGenericControlService<Request> requestCS,
+        public RequestsController(IRequestsControlService requestCS,
             IGenericControlService<RequestType> requestTypeCS,
             IStatusesControlService statusesCS,
             IUsersControlService usersCS)
@@ -34,7 +36,8 @@ namespace HRM.Controllers
         // GET: Requests
         public async Task<IActionResult> Index()
         {
-            return View(await _requestCS.GetListAsync());
+            var curentUser = await _usersCS.GetUserByEmailAsync(HttpContext.User.Identity.Name);
+            return View(await _requestCS.GetRequestListForCurrentUserAsync(curentUser));
         }
 
         // GET: Requests/Details/5
@@ -50,11 +53,12 @@ namespace HRM.Controllers
         }
 
         // GET: Requests/Create
+        [Authorize(Roles = "TeamLead, Developer")]
         public async Task<IActionResult> Create()
         {
-            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id");
-            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id");
-            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id");
+            //var user = await _usersCS.GetUserByEmailAsync(HttpContext.User.Identity.Name);
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Name");
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetRequestStatusesAsync(), "Id", "Name");
             return View();
         }
 
@@ -63,16 +67,27 @@ namespace HRM.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "TeamLead, Developer")]
         public async Task<IActionResult> Create([Bind("Id,UserId,RequestTypeId,StartDate,EndDate,StatusId")] Request request)
         {
+            var curentUser = await _usersCS.GetUserByEmailAsync(HttpContext.User.Identity.Name);
+            if (request.StartDate < DateTime.Today)
+            {
+                ModelState.AddModelError("StartDate", "StartDate is not Valid");
+            }
+            else if (request.EndDate <= request.StartDate)
+            {
+                ModelState.AddModelError("EndDate", "EndDate is not Valid");
+            }
             if (ModelState.IsValid)
             {
+                request.StatusId = _statusesCS.FirstForRequest().Id;
+                request.UserId = curentUser.Id;
                 await _requestCS.AddAsync(request);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id", request.RequestTypeId);
-            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id", request.StatusId);
-            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id", request.UserId);
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Name", request.RequestTypeId);
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetRequestStatusesAsync(), "Id", "Name", request.StatusId);
             return View(request);
         }
 
@@ -84,9 +99,8 @@ namespace HRM.Controllers
             {
                 return NotFound();
             }
-            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id", request.RequestTypeId);
-            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id", request.StatusId);
-            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id", request.UserId);
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Name", request.RequestTypeId);
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetRequestStatusesAsync(), "Id", "Name", request.StatusId);
             return View(request);
         }
 
@@ -102,10 +116,17 @@ namespace HRM.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && request.StartDate >= DateTime.Today && request.EndDate > request.StartDate)
             {
                 try
                 {
+                    var curentUser = await _usersCS.GetUserByEmailAsync(HttpContext.User.Identity.Name);
+                    request.UserId = curentUser.Id;
+                    if (request.StatusId == 0)
+                    {
+                        request.StatusId = _statusesCS.FirstForRequest().Id;
+                    }
+
                     await _requestCS.UpdateAsync(request);
                 }
                 catch (DbUpdateConcurrencyException)
@@ -121,9 +142,8 @@ namespace HRM.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Id", request.RequestTypeId);
-            ViewData["StatusId"] = new SelectList(await _statusesCS.GetListAsync(), "Id", "Id", request.StatusId);
-            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Id", request.UserId);
+            ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Name", request.RequestTypeId);
+            ViewData["StatusId"] = new SelectList(await _statusesCS.GetRequestStatusesAsync(), "Id", "Name", request.StatusId);
             return View(request);
         }
 

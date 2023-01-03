@@ -4,15 +4,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Services.RequestsServices
 {
-    public class RequestsControlService : IGenericControlService<Request>
+    public class RequestsControlService : IRequestsControlService
     {
         private readonly HRMContext _context;
         public RequestsControlService(HRMContext context)
         {
             _context = context;
         }
-        public async Task<List<Request>> GetListAsync() => await _context.Requests.ToListAsync();
-        public async Task<Request?> GetByIdAsync(int? id) => await _context.Requests.FirstOrDefaultAsync(u => u.Id == id);
+        public async Task<List<Request>> GetRequestListForCurrentUserAsync(User? currentUser)
+        {
+            var HR = await _context.RoleTypes.FirstOrDefaultAsync(r => r.Name == "HR");
+            if (HR != null && currentUser != null)
+            {
+                List<Request> requests = await GetListAsync();
+                if (currentUser.RoleType == HR)
+                    return requests;
+                return requests.Where(u => u.UserId == currentUser.Id).ToList();
+            }
+            return new List<Request>();
+        }
+        public async Task<List<Request>> GetListAsync() => await _context.Requests
+            .Include(u => u.User)
+            .Include(u => u.RequestType)
+            .Include(u => u.Status).ToListAsync();
+        public async Task<Request?> GetByIdAsync(int? id) => await _context.Requests
+            .Include(u => u.User)
+            .Include(u => u.RequestType)
+            .Include(u => u.Status).FirstOrDefaultAsync(u => u.Id == id);
         public async Task AddAsync(Request t)
         {
             _context.Requests.Add(t);

@@ -12,11 +12,14 @@ namespace HRM.Services.StatusesServices
             _context = context;
         }
 
+        public Status FirstForRequest() => _context.Statuses.First(st => st.Name == "Expected");
         public async Task<List<Status>?> GetByStatusTypeIdAsync(int id)
         {
             return await _context.Statuses.Where(s => s.StatusTypeId == id).ToListAsync();
         }
         public int GetIdWitValueUserStatus() => _context.StatusTypes.First(st => st.Name == "User status").Id;
+        public async Task<List<Status>?> GetRequestStatusesAsync() => await _context.Statuses
+            .Where(st => st.StatusType.Name == "Request status").ToListAsync();
         public async Task<List<Status>> GetListAsync() => await _context.Statuses.ToListAsync();
         public async Task<Status?> GetByIdAsync(int? id) => await _context.Statuses.FirstOrDefaultAsync(u => u.Id == id);
         public async Task AddAsync(Status t)

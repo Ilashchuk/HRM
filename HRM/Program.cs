@@ -33,6 +33,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 //builder.Services.AddScoped<IMyDependency, MyDependency>();
 builder.Services.AddScoped<IUsersControlService, UsersControlService>();
 builder.Services.AddScoped<IStatusesControlService, StatusesControlService>();
+builder.Services.AddScoped<IRequestsControlService, RequestsControlService>();
 
 builder.Services.AddScoped<IGenericControlService<StatusType>, StatusTypesControlService>();
 builder.Services.AddScoped<IGenericControlService<Company>, CompaniesControlService>();
@@ -41,7 +42,6 @@ builder.Services.AddScoped<IGenericControlService<Team>, TeamsControlService>();
 builder.Services.AddScoped<IGenericControlService<Setting>, SettingsControlService>();
 builder.Services.AddScoped<IGenericControlService<RoleType>, RoleTypesControlService>();
 builder.Services.AddScoped<IGenericControlService<RequestType>, RequestTipesControlService>();
-builder.Services.AddScoped<IGenericControlService<Request>, RequestsControlService>();
 builder.Services.AddScoped<IGenericControlService<OffitialHolliday>, OffitialHollidaysControlService>();
 
 var app = builder.Build();
