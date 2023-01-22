@@ -36,6 +36,92 @@ namespace HRM.Services.RequestsServices
             _context.Requests.Add(t);
             await _context.SaveChangesAsync();
         }
+        public async Task AddAsync(Request t, User u)
+        {
+            if (await CheckValueAsync(t, u))
+            {
+                _context.Requests.Add(t);
+                await _context.SaveChangesAsync();
+            }
+            else
+                throw new Exception();
+        }
+        public async Task<bool> CheckValueAsync(Request? request, User? user)
+        {
+            int maxDays = 20, freeDays = 20, days = 0;
+            List<Request> list = await _context.Requests.Where(x => x.User.Email == user.Email).ToListAsync();
+            request.RequestType = _context.RequestTypes.FirstOrDefault(x => x.Id == request.RequestTypeId);
+            foreach (Request r in list)
+            {
+                r.RequestType = _context.RequestTypes.FirstOrDefault(x => x.Id == r.RequestTypeId);
+            }
+
+            if (request.RequestType.Name == "Illnes")
+            {
+                
+                maxDays = _context.Settings.First(x => x.Id != null).SeekDays;
+
+                var newList = list.Where(x => x.RequestType.Name == "Illnes");
+                if (newList != null)
+                {
+                    foreach (Request req in newList)
+                    {
+                        days += CalculateDays(req);
+                    }
+                }
+
+                freeDays = maxDays - days;
+            }
+            else if (request.RequestType.Name == "Vacations")
+            {
+                maxDays = _context.Settings.First(x => x.Id != null).VacationDays;
+
+                var newList = list.Where(x => x.RequestType.Name == "Vacations");
+                if (newList != null)
+                {
+                    foreach (Request req in newList)
+                    {
+                        days += CalculateDays(req);
+                    }
+                }
+                
+                freeDays = maxDays - days;
+            }
+            else if (request.RequestType.Name == "Unpaid leave")
+            {
+                maxDays = 100;
+                freeDays = 100;
+            }
+
+            if (freeDays >= CalculateDays(request))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public int CalculateDays(Request? request)
+        {
+            int n = (request.EndDate - request.StartDate).Days;
+            int days = n + 1;
+            for (int i = 0; i < n; i++)
+            {
+                if (request.StartDate.AddDays(i).DayOfWeek == DayOfWeek.Sunday || request.StartDate.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
+                {
+                    days--;
+                }
+                else if (_context.OffitialHollidays.FirstOrDefault(f => f.Date == request.StartDate.AddDays(i)) != null)
+                {
+                    days--;
+                }
+            }
+
+            return days;
+        }
+
+
+
         public async Task DeleteAsync(Request t)
         {
             _context.Requests.Remove(t);

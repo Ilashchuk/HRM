@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using HRM.Data;
 using HRM.Models;
 using HRM.Services;
 using HRM.Services.StatusesServices;
@@ -83,8 +78,24 @@ namespace HRM.Controllers
             {
                 request.StatusId = _statusesCS.FirstForRequest().Id;
                 request.UserId = curentUser.Id;
-                await _requestCS.AddAsync(request);
-                return RedirectToAction(nameof(Index));
+                bool exeption = false;
+                try
+                {
+                    await _requestCS.AddAsync(request, curentUser);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "You have no so match days!");
+                    exeption = true;
+                }
+                if (_requestCS.Exists(request.Id))
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else if (!exeption)
+                {
+                    ModelState.AddModelError("", "Something got wrong!");
+                }
             }
             ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Name", request.RequestTypeId);
             ViewData["StatusId"] = new SelectList(await _statusesCS.GetRequestStatusesAsync(), "Id", "Name", request.StatusId);
@@ -100,7 +111,9 @@ namespace HRM.Controllers
                 return NotFound();
             }
             ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Name", request.RequestTypeId);
+            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Email", request.UserId);
             ViewData["StatusId"] = new SelectList(await _statusesCS.GetRequestStatusesAsync(), "Id", "Name", request.StatusId);
+            
             return View(request);
         }
 
@@ -121,10 +134,13 @@ namespace HRM.Controllers
                 try
                 {
                     var curentUser = await _usersCS.GetUserByEmailAsync(HttpContext.User.Identity.Name);
-                    request.UserId = curentUser.Id;
                     if (request.StatusId == 0)
                     {
                         request.StatusId = _statusesCS.FirstForRequest().Id;
+                    }
+                    if (request.UserId == 0)
+                    {
+                        request.UserId = curentUser.Id;
                     }
 
                     await _requestCS.UpdateAsync(request);
@@ -143,7 +159,9 @@ namespace HRM.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["RequestTypeId"] = new SelectList(await _requestTypeCS.GetListAsync(), "Id", "Name", request.RequestTypeId);
+            ViewData["UserId"] = new SelectList(await _usersCS.GetListAsync(), "Id", "Email", request.UserId);
             ViewData["StatusId"] = new SelectList(await _statusesCS.GetRequestStatusesAsync(), "Id", "Name", request.StatusId);
+            
             return View(request);
         }
 
