@@ -5,8 +5,8 @@
 @{
     ViewData["Title"] = "Index";
 }
-
-<h1>Users</h1>
+<div class="container">
+    <h1>Users</h1>
 @if (User.IsInRole("HR"))
 {
     <p>
@@ -77,3 +77,5 @@
 }
     </tbody>
 </table>
+
+</div>

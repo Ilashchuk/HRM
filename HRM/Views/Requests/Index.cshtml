@@ -3,10 +3,11 @@
 @{
     ViewData["Title"] = "Index";
 }
-
-<h1>Index</h1>
+<div class="container">
+    <h1>Index</h1>
 @if (User.IsInRole("TeamLead") || User.IsInRole("Developer"))
-{    <p>
+{
+    <p>
         <a asp-action="Create">Create New</a>
     </p>
 }
@@ -61,3 +62,5 @@
 }
     </tbody>
 </table>
+</div>
+

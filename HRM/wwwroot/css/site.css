@@ -16,3 +16,49 @@ html {
 body {
   margin-bottom: 60px;
 }
+section#main {
+    background: url(../img/main_bg.jpg) center center no-repeat;
+    background-size: cover
+}
+
+section#main
+.main_header h1 {
+    font-family: pfdintextcondprobold;
+    margin-top: 100px;
+    color: #fff;
+    text-transform: uppercase;
+    margin-bottom: 90px
+}
+
+section#main .main_header h1 span {
+    background-color: #666;
+    padding: 5px
+}
+
+section#main h3 {
+    text-transform: uppercase;
+    font-family: pfdintextcondprobold;
+    color: #666
+}
+
+section#main .main_button {
+    margin-top: 15px;
+    margin-bottom: 100px
+}
+
+    section#main .main_button button {
+        background-color: rgba(255,255,255,.5);
+        padding: 15px 33px;
+        color: #666;
+        font-family: pfdintextcondprobold;
+        text-transform: uppercase;
+        font-size: 20px;
+        border: 4px solid #666;
+        margin-top: 15px;
+        margin-bottom: 100px;
+        width: 300px
+    }
+
+section#main .main_button button:hover {
+    background-color: rgba(255,255,255,.8)
+}
