@@ -17,6 +17,7 @@ body {
   margin-bottom: 60px;
 }
 section#main {
+    height: 681px;
     background: url(../img/main_bg.jpg) center center no-repeat;
     background-size: cover
 }
